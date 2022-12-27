@@ -1,12 +1,18 @@
-#include "Viewer.h"
+#include "camera.h"
 
 
-Viewer viewer;
+viewer sceneViewer;
+camera sceneCamera;
+
+float curr_x = .0f, curr_y = .0f;
+float prev_x = 0, prev_y = 0;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
+
+void move_camera();
 
 int main()
 {
@@ -38,21 +44,21 @@ int main()
 	srand(time(NULL));
 
 
-	Shader ourShader("vertex.vs", "fragment.fs");
-	const char* path = "C:\\Users\\hlaw\\Downloads\\t3qqxibgic-CenterCitySciFi\\Center city Sci-Fi\\Center City Sci-Fi.obj";
-	//const char* path = "C:\\Users\\hlaw\\Documents\\folder\\ChessAnimation\\ChessAnimation\\resources\\Chessset.obj";
+	shader sceneShader("vertex.vs", "fragment.fs");
+	//const char* path = "C:\\Users\\hlaw\\Downloads\\glass_chess\\Glass Chess.obj"; //<== sprawdzic potem
+	//const char* path = "C:\\Users\\hlaw\\Downloads\\t3qqxibgic-CenterCitySciFi\\Center city Sci-Fi\\Center City Sci-Fi.obj";
+	const char* path = "C:\\Users\\hlaw\\Documents\\folder\\ChessAnimation\\ChessAnimation\\resources\\Chessset.obj";
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\survival_backpack\\Survival_BackPack_2.fbx";
 
-	Model ourModel(path);
-
+	model sceneModel(path);
+	sceneCamera = camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0,1,0), 90, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 	while (!glfwWindowShouldClose(window))
 	{
 		processInput(window);
-
 		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		ourShader.use();
+		sceneShader.use();
 
 		// view/projection transformations
 		//glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
@@ -65,8 +71,9 @@ int main()
 		//model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 		//ourShader.setMat4("model", model);
 
-		viewer.BindUniforms(ourShader);
-		ourModel.Draw(ourShader);
+		sceneViewer.bindUniforms(sceneShader);
+		sceneModel.draw(sceneShader);
+		move_camera();
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -93,29 +100,42 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	switch (key)
 	{
 	case GLFW_KEY_W:
-		viewer.TransformView(glm::vec3(0.0f, 0.0f, 0.2f));
+		//sceneViewer.transformView(glm::vec3(0.0f, 0.0f, 0.2f));
 		break;
 	case GLFW_KEY_S:
-		viewer.TransformView(glm::vec3(0.0f, 0.0f, -0.2f));
+		//sceneViewer.transformView(glm::vec3(0.0f, 0.0f, -0.2f));
 		break;
 	case GLFW_KEY_D:
-		viewer.TransformView(glm::vec3(-0.2f, 0.0f, 0.0f));
+		//sceneViewer.transformView(glm::vec3(-0.2f, 0.0f, 0.0f));
 		break;
 	case GLFW_KEY_A:
-		viewer.TransformView(glm::vec3(0.2f, 0.0f, 0.0f));
+		//sceneViewer.transformView(glm::vec3(0.2f, 0.0f, 0.0f));
+		break;
+	case GLFW_KEY_SPACE:
+		break;
+	case GLFW_KEY_LEFT_SHIFT:
 		break;
 	}
-	//if (key == GLFW_KEY_E && action == GLFW_PRESS)
-		//activate_airship();
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 {
 	/*int xpos, ypos;
 	glfwGetCursorPos(window, &xpos, &ypos);*/
-	float horizontalAngle = MOUSE_SPEED * float(SCR_WIDTH / 2 - xpos);
+	/*float horizontalAngle = MOUSE_SPEED * float(SCR_WIDTH / 2 - xpos);
 	float verticalAngle = MOUSE_SPEED * float(SCR_HEIGHT / 2 - ypos);
-	viewer.Rotate(horizontalAngle, glm::vec3(1.0f, 0.0f, 0.0f));
-	viewer.Rotate(verticalAngle, glm::vec3(0.0f, 1.0f, 0.0f));
-	glfwSetCursorPos(window, SCR_WIDTH / 2, SCR_HEIGHT / 2);
+	sceneViewer.rotate(horizontalAngle, glm::vec3(0.0f, 1.0f, 0.0f));
+	sceneViewer.rotate(verticalAngle, glm::vec3(1.0f, 0.0f, 0.0f));
+	glfwSetCursorPos(window, SCR_WIDTH / 2, SCR_HEIGHT / 2);*/
+
+	curr_x = 2.0f * xpos / SCR_WIDTH - 1.0f;
+	curr_y = 2.0f * (SCR_HEIGHT - ypos) / SCR_HEIGHT - 1.0f;
+}
+
+void move_camera()
+{
+	sceneViewer.setView(sceneCamera.move_look(MOUSE_SPEED * (curr_x - prev_x), MOUSE_SPEED * (curr_y - prev_y)));
+
+	prev_x = curr_x;
+	prev_y = curr_y;
 }

@@ -10,13 +10,13 @@
 #include "stb_image.h"
 #include "Shader.h" // this includes glm
 
-struct Vertex {
-    glm::vec3 Position;
-    glm::vec3 Normal;
-    glm::vec2 TexCoords;
+struct vertex {
+    glm::vec3 position;
+    glm::vec3 normal;
+    glm::vec2 texCoords;
 };
 
-struct Texture {
+struct texture {
     unsigned int id;
     std::string type;
     std::string path;
@@ -25,5 +25,12 @@ struct Texture {
 
 const unsigned int SCR_WIDTH = 1200;
 const unsigned int SCR_HEIGHT = 900;
-const float PI = 3.1415926;
+const float PI = 3.1415926535f;
 const float MOUSE_SPEED = 0.3f;
+const float KEY_BATCH = 0.25f;
+const float CAMERA_VIEWPORT = 2.0f;
+
+
+inline float degrees_to_radians(float degrees) {
+    return degrees *  PI / 180.0f;
+}

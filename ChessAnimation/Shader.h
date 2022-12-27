@@ -13,13 +13,13 @@
 #include <iostream>
 
 
-class Shader
+class shader
 {
 	unsigned int ID;
 
 public:
 
-	Shader(const char* vertexPath, const char* fragmentPath);
+	shader(const char* vertexPath, const char* fragmentPath);
 
 	void use();
 

@@ -1,25 +1,25 @@
 #pragma once
-#include "Mesh.h"
+#include "mesh.h"
 #include "stb_image.h"
 
 unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma);
 
-class Model
+class model
 {
 public:
-    Model(const char* path)
+    model(const char* path)
     {
         loadModel(path);
     }
-    void Draw(Shader& shader)
+    void draw(shader& shader)
     {
         for (unsigned int i = 0; i < meshes.size(); i++)
-            meshes[i].Draw(shader, i);
+            meshes[i].draw(shader, i);
     }
 private:
     // model data
-    std::vector<Texture> textures_loaded;
-    std::vector<Mesh> meshes;
+    std::vector<texture> textures_loaded;
+    std::vector<mesh> meshes;
     std::string directory;
 
     void loadModel(std::string path)
@@ -52,64 +52,64 @@ private:
         }
     }
 
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene)
+    mesh processMesh(aiMesh* msh, const aiScene* scene)
     {
-        std::vector<Vertex> vertices;
+        std::vector<vertex> vertices;
         std::vector<unsigned int> indices;
-        std::vector<Texture> textures;
+        std::vector<texture> textures;
 
-        for (unsigned int i = 0; i < mesh->mNumVertices; i++)
+        for (unsigned int i = 0; i < msh->mNumVertices; i++)
         {
-            Vertex vertex;
+            vertex vertex;
             // process vertex positions, normals and texture coordinates
             glm::vec3 vector;
-            vector.x = mesh->mVertices[i].x;
-            vector.y = mesh->mVertices[i].y;
-            vector.z = mesh->mVertices[i].z;
-            vertex.Position = vector;
-            vector.x = mesh->mNormals[i].x;
-            vector.y = mesh->mNormals[i].y;
-            vector.z = mesh->mNormals[i].z;
-            vertex.Normal = vector;
+            vector.x = msh->mVertices[i].x;
+            vector.y = msh->mVertices[i].y;
+            vector.z = msh->mVertices[i].z;
+            vertex.position = vector;
+            vector.x = msh->mNormals[i].x;
+            vector.y = msh->mNormals[i].y;
+            vector.z = msh->mNormals[i].z;
+            vertex.normal = vector;
             vertices.push_back(vertex);
 
-            if (mesh->mTextureCoords[0]) // does the mesh contain texture coordinates?
+            if (msh->mTextureCoords[0]) // does the mesh contain texture coordinates?
             {
                 glm::vec2 vec;
-                vec.x = mesh->mTextureCoords[0][i].x;
-                vec.y = mesh->mTextureCoords[0][i].y;
-                vertex.TexCoords = vec;
+                vec.x = msh->mTextureCoords[0][i].x;
+                vec.y = msh->mTextureCoords[0][i].y;
+                vertex.texCoords = vec;
             }
             else
-                vertex.TexCoords = glm::vec2(0.0f, 0.0f);
+                vertex.texCoords = glm::vec2(0.0f, 0.0f);
         }
         // process indices
         
-        for (unsigned int i = 0; i < mesh->mNumFaces; i++)
+        for (unsigned int i = 0; i < msh->mNumFaces; i++)
         {
-            aiFace face = mesh->mFaces[i];
+            aiFace face = msh->mFaces[i];
             for (unsigned int j = 0; j < face.mNumIndices; j++)
                 indices.push_back(face.mIndices[j]);
         }
 
         // process material
-        if (mesh->mMaterialIndex >= 0)
+        if (msh->mMaterialIndex >= 0)
         {
-            aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-            std::vector<Texture> diffuseMaps = loadMaterialTextures(material,
+            aiMaterial* material = scene->mMaterials[msh->mMaterialIndex];
+            std::vector<texture> diffuseMaps = loadMaterialTextures(material,
                 aiTextureType_DIFFUSE, "texture_diffuse");
             textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
-            std::vector<Texture> specularMaps = loadMaterialTextures(material,
+            std::vector<texture> specularMaps = loadMaterialTextures(material,
                 aiTextureType_SPECULAR, "texture_specular");
             textures.insert(textures.end(), specularMaps.begin(), specularMaps.end());
         }
 
-        return Mesh(vertices, indices, textures);
+        return mesh(vertices, indices, textures);
     }
 
-    std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
+    std::vector<texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName)
     {
-        std::vector<Texture> textures;
+        std::vector<texture> textures;
         for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
         {
             aiString str;
@@ -126,7 +126,7 @@ private:
             }
             if (!skip)
             {   // if texture hasn't been loaded already, load it
-                Texture texture;
+                texture texture;
                 texture.id = TextureFromFile(str.C_Str(), directory, false);
                 texture.type = typeName;
                 texture.path = str.C_Str();

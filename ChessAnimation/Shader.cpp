@@ -1,11 +1,11 @@
-#include "Shader.h"
+#include "shader.h"
 #include <glad/glad.h>
 #include <glfw3.h>
 //#include <glm/glm.hpp>
 //#include <glm/gtc/matrix_transform.hpp>
 //#include <glm/gtc/type_ptr.hpp>
 
-Shader::Shader(const char* vertexPath, const char* fragmentPath)
+shader::shader(const char* vertexPath, const char* fragmentPath)
 {
 	std::string vertexCode;
 	std::string fragmentCode;
@@ -81,32 +81,32 @@ Shader::Shader(const char* vertexPath, const char* fragmentPath)
 	glDeleteShader(fragment);
 }
 
-void Shader::use()
+void shader::use()
 {
 	glUseProgram(ID);
 }
 
-void Shader::setBool(const std::string& name, bool value) const
+void shader::setBool(const std::string& name, bool value) const
 {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), (int)value);
 }
-void Shader::setInt(const std::string& name, int value) const
+void shader::setInt(const std::string& name, int value) const
 {
 	glUniform1i(glGetUniformLocation(ID, name.c_str()), value);
 }
-void Shader::setFloat(const std::string& name, float value) const
+void shader::setFloat(const std::string& name, float value) const
 {
 	glUniform1f(glGetUniformLocation(ID, name.c_str()), value);
 }
-void Shader::setVec2(const std::string& name, glm::vec2 value) const
+void shader::setVec2(const std::string& name, glm::vec2 value) const
 {
 	glUniform2f(glGetUniformLocation(ID, name.c_str()), value.x, value.y);
 }
-void Shader::setVec3(const std::string& name, glm::vec3 value) const
+void shader::setVec3(const std::string& name, glm::vec3 value) const
 {
 	glUniform3f(glGetUniformLocation(ID, name.c_str()), value.x, value.y, value.z);
 }
-void Shader::setMat4(const std::string& name, glm::mat4 value) const
+void shader::setMat4(const std::string& name, glm::mat4 value) const
 {
 	glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, glm::value_ptr(value));
 }
