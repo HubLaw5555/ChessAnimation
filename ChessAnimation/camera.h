@@ -75,4 +75,10 @@ public:
 
 		return glm::lookAt(origin, look_at, vup);
 	}
+
+	glm::vec3 getLookDir()
+	{
+		glm::vec3 direction = origin - look_at;
+		return direction / glm::length(direction);
+	}
 };

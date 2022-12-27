@@ -23,11 +23,12 @@ struct texture {
 };
 
 
-const unsigned int SCR_WIDTH = 1200;
-const unsigned int SCR_HEIGHT = 900;
+const unsigned int SCR_WIDTH = 1400;
+const unsigned int SCR_HEIGHT = 1050;
 const float PI = 3.1415926535f;
-const float MOUSE_SPEED = 0.3f;
+const float MOUSE_SPEED = 0.6f;
 const float KEY_BATCH = 0.25f;
+const float ROTATION_BATCH = 0.5f;
 const float CAMERA_VIEWPORT = 2.0f;
 
 

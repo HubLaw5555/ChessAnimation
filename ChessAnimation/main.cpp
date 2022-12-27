@@ -6,13 +6,15 @@ camera sceneCamera;
 
 float curr_x = .0f, curr_y = .0f;
 float prev_x = 0, prev_y = 0;
+glm::vec3 shift = glm::vec3(0, 0, 0);
+glm::vec3 position = glm::vec3(0, 0, 0);
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow* window);
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos);
 
-void move_camera();
+void move_camera(GLFWwindow* window);
 
 int main()
 {
@@ -28,6 +30,7 @@ int main()
 		glfwTerminate();
 		return -1;
 	}
+
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetKeyCallback(window, key_callback);
@@ -47,8 +50,10 @@ int main()
 	shader sceneShader("vertex.vs", "fragment.fs");
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\glass_chess\\Glass Chess.obj"; //<== sprawdzic potem
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\t3qqxibgic-CenterCitySciFi\\Center city Sci-Fi\\Center City Sci-Fi.obj";
-	const char* path = "C:\\Users\\hlaw\\Documents\\folder\\ChessAnimation\\ChessAnimation\\resources\\Chessset.obj";
+	//const char* path = "C:\\Users\\hlaw\\Documents\\folder\\ChessAnimation\\ChessAnimation\\resources\\Chessset.obj";
+	//const char* path = "C:\\Users\\hlaw\\Downloads\\chess_alone\\pieces.obj";
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\survival_backpack\\Survival_BackPack_2.fbx";
+	const char* path = "C:\\Users\\hlaw\\Downloads\\uploads_files_3059059_ChessModel\\Chess1.obj";
 
 	model sceneModel(path);
 	sceneCamera = camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0,1,0), 90, (float)SCR_WIDTH / (float)SCR_HEIGHT);
@@ -70,10 +75,10 @@ int main()
 		//model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f)); // translate it down so it's at the center of the scene
 		//model = glm::scale(model, glm::vec3(1.0f, 1.0f, 1.0f));	// it's a bit too big for our scene, so scale it down
 		//ourShader.setMat4("model", model);
-
+		sceneShader.setVec3("observerPosition", position);
 		sceneViewer.bindUniforms(sceneShader);
 		sceneModel.draw(sceneShader);
-		move_camera();
+		move_camera(window);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -101,19 +106,31 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 	{
 	case GLFW_KEY_W:
 		//sceneViewer.transformView(glm::vec3(0.0f, 0.0f, 0.2f));
+		shift.z -= KEY_BATCH;
 		break;
 	case GLFW_KEY_S:
 		//sceneViewer.transformView(glm::vec3(0.0f, 0.0f, -0.2f));
+		shift.z += KEY_BATCH;
 		break;
 	case GLFW_KEY_D:
 		//sceneViewer.transformView(glm::vec3(-0.2f, 0.0f, 0.0f));
+		shift.x += KEY_BATCH;
 		break;
 	case GLFW_KEY_A:
+		shift.x -= KEY_BATCH;
 		//sceneViewer.transformView(glm::vec3(0.2f, 0.0f, 0.0f));
 		break;
 	case GLFW_KEY_SPACE:
+		shift.y += KEY_BATCH;
 		break;
 	case GLFW_KEY_LEFT_SHIFT:
+		shift.y -= KEY_BATCH;
+		break;
+	case GLFW_KEY_LEFT:
+		sceneViewer.rotate(ROTATION_BATCH, glm::vec3(0, 1, 0));
+		break;
+	case GLFW_KEY_RIGHT:
+		sceneViewer.rotate(-ROTATION_BATCH, glm::vec3(0, 1, 0));
 		break;
 	}
 }
@@ -132,10 +149,17 @@ void cursor_position_callback(GLFWwindow* window, double xpos, double ypos)
 	curr_y = 2.0f * (SCR_HEIGHT - ypos) / SCR_HEIGHT - 1.0f;
 }
 
-void move_camera()
+void move_camera(GLFWwindow* window)
 {
+	sceneCamera.move_origin(shift);
+	sceneViewer.transformView(shift);
 	sceneViewer.setView(sceneCamera.move_look(MOUSE_SPEED * (curr_x - prev_x), MOUSE_SPEED * (curr_y - prev_y)));
 
 	prev_x = curr_x;
 	prev_y = curr_y;
+	position += shift;
+	shift = glm::vec3(0, 0, 0);
+	//glfwSetCursorPos(window, SCR_WIDTH / 2, SCR_HEIGHT / 2);
+	//curr_x = prev_x;
+	//curr_x = prev_x;
 }

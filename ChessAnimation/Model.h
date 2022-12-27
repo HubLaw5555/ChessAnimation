@@ -67,9 +67,13 @@ private:
             vector.y = msh->mVertices[i].y;
             vector.z = msh->mVertices[i].z;
             vertex.position = vector;
-            vector.x = msh->mNormals[i].x;
-            vector.y = msh->mNormals[i].y;
-            vector.z = msh->mNormals[i].z;
+            vector = glm::vec3(0);
+            //if (msh->HasNormals())
+            //{
+                vector.x = msh->mNormals[i].x;
+                vector.y = msh->mNormals[i].y;
+                vector.z = msh->mNormals[i].z;
+            //}
             vertex.normal = vector;
             vertices.push_back(vertex);
 
