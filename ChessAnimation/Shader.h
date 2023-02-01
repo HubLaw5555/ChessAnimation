@@ -15,10 +15,10 @@
 
 class shader
 {
-	unsigned int ID;
 
 public:
 
+	unsigned int ID;
 	shader(const char* vertexPath, const char* fragmentPath);
 
 	void use();

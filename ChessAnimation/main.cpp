@@ -51,11 +51,14 @@ int main()
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\glass_chess\\Glass Chess.obj"; //<== sprawdzic potem
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\t3qqxibgic-CenterCitySciFi\\Center city Sci-Fi\\Center City Sci-Fi.obj";
 	//const char* path = "C:\\Users\\hlaw\\Documents\\folder\\ChessAnimation\\ChessAnimation\\resources\\Chessset.obj";
-	//const char* path = "C:\\Users\\hlaw\\Downloads\\chess_alone\\pieces.obj";
+	//const char* path = "C:\\Users\\hlaw\\Downloads\\chess_alone\\pieces.obj;
 	//const char* path = "C:\\Users\\hlaw\\Downloads\\survival_backpack\\Survival_BackPack_2.fbx";
-	const char* path = "C:\\Users\\hlaw\\Downloads\\uploads_files_3059059_ChessModel\\Chess1.obj";
+	//const char* path = "C:\\Users\\hlaw\\Downloads\\uploads_files_2063903_chessPieces_1.obj";
 
-	model sceneModel(path);
+	const char* path = "C:\\Users\\hlaw\\Downloads\\Chess_1";
+	//const char* path = "C:\\Users\\hlaw\\Downloads\\Board.obj";
+
+	model sceneModel(path, true);
 	sceneCamera = camera(glm::vec3(0, 0, 0), glm::vec3(0, 0, -1), glm::vec3(0,1,0), 90, (float)SCR_WIDTH / (float)SCR_HEIGHT);
 	while (!glfwWindowShouldClose(window))
 	{

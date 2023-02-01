@@ -7,9 +7,16 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
 class model
 {
 public:
-    model(const char* path)
+    model(const char* path, bool isDirectory = false)
     {
-        loadModel(path);
+        if (isDirectory)
+        {
+            loadModelDirectory(path);
+        }
+        else
+        {
+            loadModel(path);
+        }
     }
     void draw(shader& shader)
     {
@@ -21,6 +28,8 @@ private:
     std::vector<texture> textures_loaded;
     std::vector<mesh> meshes;
     std::string directory;
+
+    std::vector<std::string> files { "Pawn.obj", "Queen.obj", "Rook.obj", "Bishop.obj", "Knight.obj", "Board.obj"};
 
     void loadModel(std::string path)
     {
@@ -35,6 +44,22 @@ private:
         directory = path.substr(0, path.find_last_of('/'));
 
         processNode(scene->mRootNode, scene);
+    }
+
+    void loadModelDirectory(std::string directory)
+    {
+        Assimp::Importer import;
+        for (auto filename : files)
+        {
+            const aiScene* scene = import.ReadFile(directory + '\\' + filename, aiProcess_Triangulate | aiProcess_FlipUVs);
+            if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
+            {
+                std::cout << "ERROR::ASSIMP::" << import.GetErrorString() << std::endl;
+                return;
+            }
+            this->directory = directory;
+            processNode(scene->mRootNode, scene);
+        }
     }
 
     void processNode(aiNode* node, const aiScene* scene)
@@ -68,12 +93,12 @@ private:
             vector.z = msh->mVertices[i].z;
             vertex.position = vector;
             vector = glm::vec3(0);
-            //if (msh->HasNormals())
-            //{
+            if (msh->HasNormals())
+            {
                 vector.x = msh->mNormals[i].x;
                 vector.y = msh->mNormals[i].y;
                 vector.z = msh->mNormals[i].z;
-            //}
+            }
             vertex.normal = vector;
             vertices.push_back(vertex);
 
@@ -145,7 +170,7 @@ private:
 unsigned int TextureFromFile(const char* path, const std::string & directory, bool gamma)
 {
     std::string filename = std::string(path);
-    filename = directory + '/' + filename;
+    filename = directory + '\\' + filename;
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
