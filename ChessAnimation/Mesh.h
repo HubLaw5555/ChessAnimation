@@ -1,15 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
+// holds all OpenGL type declarations
 
-#include <glad/glad.h> // holds all OpenGL type declarations
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-
-#include "shader.h"
-
-#include <string>
-#include <vector>
+#include "board.h"
 using namespace std;
 
 #define MAX_BONE_INFLUENCE 4
@@ -44,6 +37,8 @@ public:
     vector<unsigned int> indices;
     vector<Texture>      textures;
     unsigned int VAO;
+    std::string name;
+    glm::vec3 centerPos;
 
     // constructor
     Mesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures)
@@ -51,48 +46,12 @@ public:
         this->vertices = vertices;
         this->indices = indices;
         this->textures = textures;
-
         // now that we have all the required data, set the vertex buffers and its attribute pointers.
         setupMesh();
     }
 
     // render the mesh
-    void Draw(shader& shader)
-    {
-        // bind appropriate textures
-        unsigned int diffuseNr = 1;
-        unsigned int specularNr = 1;
-        unsigned int normalNr = 1;
-        unsigned int heightNr = 1;
-        for (unsigned int i = 0; i < textures.size(); i++)
-        {
-            glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
-            // retrieve texture number (the N in diffuse_textureN)
-            string number;
-            string name = textures[i].type;
-            if (name == "texture_diffuse")
-                number = std::to_string(diffuseNr++);
-            else if (name == "texture_specular")
-                number = std::to_string(specularNr++); // transfer unsigned int to string
-            else if (name == "texture_normal")
-                number = std::to_string(normalNr++); // transfer unsigned int to string
-            else if (name == "texture_height")
-                number = std::to_string(heightNr++); // transfer unsigned int to string
-
-            // now set the sampler to the correct texture unit
-            glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
-            // and finally bind the texture
-            glBindTexture(GL_TEXTURE_2D, textures[i].id);
-        }
-
-        // draw mesh
-        glBindVertexArray(VAO);
-        glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
-        glBindVertexArray(0);
-
-        // always good practice to set everything back to defaults once configured.
-        glActiveTexture(GL_TEXTURE0);
-    }
+    virtual void Draw(shader& shader, glm::vec3 shift = glm::vec3(0)) = 0;
 
 private:
     // render data 
@@ -141,6 +100,75 @@ private:
         glEnableVertexAttribArray(6);
         glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, m_Weights));
         glBindVertexArray(0);
+    }
+
+protected:
+    void StandardDraw(shader& shader)
+    {
+        // bind appropriate textures
+        unsigned int diffuseNr = 1;
+        unsigned int specularNr = 1;
+        unsigned int normalNr = 1;
+        unsigned int heightNr = 1;
+        for (unsigned int i = 0; i < textures.size(); i++)
+        {
+            glActiveTexture(GL_TEXTURE0 + i); // active proper texture unit before binding
+            // retrieve texture number (the N in diffuse_textureN)
+            string number;
+            string name = textures[i].type;
+            if (name == "texture_diffuse")
+                number = std::to_string(diffuseNr++);
+            else if (name == "texture_specular")
+                number = std::to_string(specularNr++); // transfer unsigned int to string
+            else if (name == "texture_normal")
+                number = std::to_string(normalNr++); // transfer unsigned int to string
+            else if (name == "texture_height")
+                number = std::to_string(heightNr++); // transfer unsigned int to string
+
+            // now set the sampler to the correct texture unit
+            glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
+            // and finally bind the texture
+            glBindTexture(GL_TEXTURE_2D, textures[i].id);
+        }
+
+        // draw mesh
+        glBindVertexArray(VAO);
+        glDrawElements(GL_TRIANGLES, static_cast<unsigned int>(indices.size()), GL_UNSIGNED_INT, 0);
+        glBindVertexArray(0);
+
+        // always good practice to set everything back to defaults once configured.
+        glActiveTexture(GL_TEXTURE0);
+    }
+};
+
+class RegularMesh : public Mesh {
+public:
+    RegularMesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures) : Mesh(vertices, indices, textures) {}
+
+    void Draw(shader& shader, glm::vec3 shift = glm::vec3(0)) override
+    {
+        shader.setVec3("shift", shift);
+        this->StandardDraw(shader);
+    }
+};
+
+
+class PieceMesh : public Mesh {
+    piece* p;
+public:
+
+    PieceMesh(vector<Vertex> vertices, vector<unsigned int> indices, vector<Texture> textures, std::string initialCoord) : Mesh(vertices, indices, textures) 
+    {
+        p = Board::GetInstance()->SetInitialPiece(initialCoord);
+    }
+
+    void Draw(shader& shader, glm::vec3 shift = glm::vec3(0)) override
+    {
+        if (p->isVisible)
+        {
+            shader.setVec3("shift", p->totalShift);
+            this->StandardDraw(shader);
+        }
     }
 };
 #endif

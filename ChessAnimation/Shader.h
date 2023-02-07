@@ -5,12 +5,24 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <glad/glad.h>
+#include <glfw3.h>
 //
 
 #include <string>
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <vector>
+#include <utility>
+#include <map>
+
+#include "stb_image.h"
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
+
 
 
 class shader
@@ -35,4 +47,5 @@ public:
 
 	void setMat4(const std::string& name, glm::mat4 value) const;
 };
+
 #endif

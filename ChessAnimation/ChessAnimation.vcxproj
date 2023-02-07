@@ -165,6 +165,7 @@
     <ClCompile Include="stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="board.h" />
     <ClInclude Include="camera.h" />
     <ClInclude Include="global.h" />
     <ClInclude Include="mesh.h" />
@@ -174,12 +175,10 @@
     <ClInclude Include="viewer.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="fragment.fs">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
-    <None Include="vertex.vs">
-      <DeploymentContent>true</DeploymentContent>
-    </None>
+    <None Include="shaders\chess_fragment.fs" />
+    <None Include="shaders\chess_vertex.vs" />
+    <None Include="shaders\sphere.fs" />
+    <None Include="shaders\sphere.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

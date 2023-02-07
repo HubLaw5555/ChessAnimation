@@ -1,24 +1,9 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <glad/glad.h> 
-
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include "stb_image.h"
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
 #include "mesh.h"
 
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <map>
-#include <vector>
 using namespace std;
 
 unsigned int TextureFromFile(const char* path, const string& directory, bool gamma = false);
@@ -28,9 +13,10 @@ class Model
 public:
     // model data 
     vector<Texture> textures_loaded;	// stores all the textures loaded so far, optimization to make sure textures aren't loaded more than once.
-    vector<Mesh>    meshes;
+    vector<Mesh*>    meshes;
     string directory;
     bool gammaCorrection;
+    int readPiecePositions = 0;
 
     // constructor, expects a filepath to a 3D model.
     Model(string const& path, bool gamma = false) : gammaCorrection(gamma)
@@ -39,10 +25,10 @@ public:
     }
 
     // draws the model, and thus all its meshes
-    void Draw(shader& shader)
+    void Draw(shader& shader, glm::vec3 shift = glm::vec3(0))
     {
         for (unsigned int i = 0; i < meshes.size(); i++)
-            meshes[i].Draw(shader);
+            meshes[i]->Draw(shader, shift);
     }
 
 private:
@@ -84,13 +70,13 @@ private:
 
     }
 
-    Mesh processMesh(aiMesh* mesh, const aiScene* scene)
+    Mesh* processMesh(aiMesh* mesh, const aiScene* scene)
     {
         // data to fill
         vector<Vertex> vertices;
         vector<unsigned int> indices;
         vector<Texture> textures;
-
+        glm::vec3 avg = glm::vec3(0);
         // walk through each of the mesh's vertices
         for (unsigned int i = 0; i < mesh->mNumVertices; i++)
         {
@@ -100,6 +86,8 @@ private:
             vector.x = mesh->mVertices[i].x;
             vector.y = mesh->mVertices[i].y;
             vector.z = mesh->mVertices[i].z;
+            avg += glm::vec3(vector.x, vector.y, vector.z);
+
             vertex.Position = vector;
             // normals
             if (mesh->HasNormals())
@@ -150,7 +138,6 @@ private:
         // diffuse: texture_diffuseN
         // specular: texture_specularN
         // normal: texture_normalN
-
         // 1. diffuse maps
         vector<Texture> diffuseMaps = loadMaterialTextures(material, aiTextureType_DIFFUSE, "texture_diffuse");
         textures.insert(textures.end(), diffuseMaps.begin(), diffuseMaps.end());
@@ -165,7 +152,18 @@ private:
         textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
         // return a mesh object created from the extracted mesh data
-        return Mesh(vertices, indices, textures);
+        std::string name = std::string(mesh->mName.C_Str());
+
+        Mesh* vMesh = nullptr;
+        if ( name.find("black_") != std::string::npos || name.find("white_") != std::string::npos)
+            vMesh = new PieceMesh(vertices, indices, textures, piecesFromFile[readPiecePositions++]);
+         else
+            vMesh = new RegularMesh(vertices, indices, textures);
+
+        vMesh ->name = std::string(mesh->mName.C_Str());
+        vMesh->centerPos = avg / (float)vertices.size();
+        std::cout << vMesh->name << "avgX: " << vMesh->centerPos.x << ", avgY: " << vMesh->centerPos.y << "\n";
+        return vMesh;
     }
 
     // checks all material textures of a given type and loads the textures if they're not loaded yet.
