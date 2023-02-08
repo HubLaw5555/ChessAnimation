@@ -29,6 +29,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 const float sunScale = 0.03f;
+float fogIntesity = 1.2f;
 
 int main()
 {
@@ -96,8 +97,7 @@ int main()
 
 		processInput(window);
 
-
-		glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+		glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		sceneShader.use();
@@ -105,9 +105,11 @@ int main()
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
 		glm::mat4 view = camera.GetViewMatrix();
+
+		sceneShader.setVec3("cameraPos", camera.Position);
 		sceneShader.setMat4("projection", projection);
 		sceneShader.setMat4("view", view);
-
+		sceneShader.setFloat("fogMultiplier", fogIntesity);
 
 		glm::mat4 model = glm::mat4(1.0f);
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
@@ -144,6 +146,10 @@ void processInput(GLFWwindow* window)
 		camera.ProcessKeyboard(UP, deltaTime);
 	if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS)
 		camera.ProcessKeyboard(DOWN, deltaTime);
+	if (glfwGetKey(window, GLFW_KEY_LEFT_BRACKET) == GLFW_PRESS && fogIntesity > 1)
+		fogIntesity -= 0.01;
+	if (glfwGetKey(window, GLFW_KEY_RIGHT_BRACKET) == GLFW_PRESS && fogIntesity < 5)
+		fogIntesity += 0.01;
 }
 
 float t = 0.0f;
@@ -153,11 +159,18 @@ void DrawSuns(shader& shader, Model& sun)
 	shader.setMat4("model", model);
 
 	glm::vec3 time = glm::vec3(cosf(t) - sinf(t), 1, cosf(t) + sinf(t));
-
-	sun.Draw(shader, (glm::vec3(2.0f, 1.0f, 2.0f)*time)/sunScale);
-	sun.Draw(shader, (glm::vec3(-2.0f, 1.0f, 2.0f)*time)/sunScale);
-	sun.Draw(shader, (glm::vec3(2.0f, 1.0f, -2.0f)*time)/sunScale);
-	sun.Draw(shader, (glm::vec3(-2.0f, 1.0f, -2.0f) *time)/sunScale);
+	glm::vec3 p = glm::vec3(2.0f, 1.0f, 2.0f) * time;
+	shader.setVec3("l1", p);
+	sun.Draw(shader, p / sunScale);/*
+	p = glm::vec3(-2.0f, 1.0f, 2.0f) * time;
+	shader.setVec3("l2", p);
+	sun.Draw(shader, p/sunScale);
+	p = glm::vec3(2.0f, 1.0f, -2.0f) * time;
+	shader.setVec3("l3", p);
+	sun.Draw(shader, p / sunScale);
+	p = glm::vec3(-2.0f, 1.0f, -2.0f) * time;
+	shader.setVec3("l4", p);
+	sun.Draw(shader, p / sunScale);*/
 	t += 0.0005;
 }
 

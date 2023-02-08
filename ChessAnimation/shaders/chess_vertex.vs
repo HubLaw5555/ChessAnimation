@@ -2,47 +2,29 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in vec3 aNormal;
 layout (location = 2) in vec2 aTexCoords;
+layout (location = 3) in vec3 aTangent;
+layout (location = 4) in vec3 aBitangent;
 
 out vec2 TexCoords;
-out vec3 vColor;
+out vec3 worldNormal;
+out vec3 worldPos;
+out mat3 TBN;
 
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 uniform vec3 shift;
-uniform vec3 meshColor;
-uniform vec3 observerPosition;
-
-vec3 lightPos = vec3(5);
-vec3 lightColor = vec3(1);
-
 
 void main()
 {
     TexCoords = aTexCoords;
-    //color = meshColor;
-    vec3 V = normalize(aPos - observerPosition);
-    vec3 N = aNormal;
-    float ka = 0.3f;
-    float kd = 0.015;
-    float ks = 0.5f;
-    int alpha = 10;
-    vec3 diffColor = vec3(0);
-    vec3 specColor = vec3(0);
-    vec3 L = normalize(lightPos - aPos);
     
-    float ln = dot(L,N);
-    diffColor = ln*lightColor;
-    
-    vec3 R = normalize(2.0f*ln*N - L);
-    
-    float product = pow(dot(R,V), alpha);
-    
-    specColor = product*lightColor;
-    vColor = ka*meshColor + kd*diffColor + ks*specColor;
-    vColor.x = clamp(vColor.x, 0.0f, 1.0f);
-    vColor.y = clamp(vColor.y, 0.0f, 1.0f);
-    vColor.z = clamp(vColor.z, 0.0f, 1.0f);
+    vec3 T = normalize(vec3(model * vec4(aTangent,   0.0)));
+    vec3 B = normalize(vec3(model * vec4(aBitangent, 0.0)));
+    vec3 N = normalize(vec3(model * vec4(aNormal,    0.0)));
+    TBN = mat3(T, B, N);
 
-    gl_Position = projection * view * model * vec4(aPos + shift, 1.0);
+    worldPos = vec3(model * vec4(aPos, 1.0));
+    worldNormal = mat3(transpose(inverse(model))) * aNormal;
+    gl_Position = projection * view * model *  vec4(aPos + shift, 1.0);
 }
